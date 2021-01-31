@@ -81,7 +81,11 @@ Da auch das nicht immer hilft, empfiehlt es sich Foren, wie bspw. [Cross Validat
 # Setup
 Diese Guide arbeitet mit exemplarischen Daten als eine Art Blaupause für eure R-Projekte. In erster Linie wird der Datensatz **sleepstudy** aus dem Paket *lme4* verwendet:   
 
-> *"The average reaction time per day for subjects in a sleep deprivation study. On day 0 the subjects had their normal amount of sleep. Starting that night they were restricted to 3 hours of sleep per night. The observations represent the average reaction time on a series of tests given each day to each subject."* (Quelle: ```?sleepstudy```)
+> *"The average reaction time per day for subjects in a sleep deprivation study. On day 0 the subjects had their normal amount of sleep. Starting that night they were restricted to 3 hours of sleep per night. The observations represent the average reaction time on a series of tests given each day to each subject."* (Quelle: ```?sleepstudy```)   
+    
+Die Kapitel [Stepwise Regression] und [Pairwise Comparison bei Linear Mixed Effect Models] arbeiten mit dem *etwas* weniger ansprechenenden Datensatz **ham** aus dem Paket *lmerTest*:    
+
+> *"One of the purposes of the study was to investigate the effect of information given to the consumers measured in hedonic liking for the hams. Two of the hams were Spanish and two were Norwegian, each origin representing different salt levels and different aging time. The information about origin was given in such way that both true and false information was given. Essentially a 4x2 design with 4 samples and 2 information levels. A total of 81 Consumers participated in the study."* (Quelle: ```?ham```) 
 
 Zunächst müssen die Pakete geladen werden:
 ```{r setup, echo=T, message=F}
@@ -1227,19 +1231,19 @@ In R wird die Funktion ```step()``` aus dem Paket "lmerTest" wie folgt verwendet
 3. Ergebnisse der *Stepwise Regression* ausgeben
 4. Neues Modell mit der Funktion ```get_model()``` in neuer Variable speichern    
 
-Ein Beispiel für eine *Stepwise Regression* anhand der "ham"-Daten:   
+Ein Beispiel für eine *Stepwise Regression* anhand der "ham"-Daten aus dem "lmerTest"-Paket:   
 ```{r stepwise regression, echo=T}
 # Schritt 1
-fm <- lmer(Informed.liking ~ Product*Information*Gender*Age +
+lmm6 <- lmer(Informed.liking ~ Product*Information*Gender*Age +
              + (1|Consumer) + (1|Consumer:Product) +
              (1|Consumer:Information),
            data = ham)
 # Schritt 2
-step_fm <- step(fm)
+step_lmm6 <- step(lmm6)
 # Schritt 3
-step_fm      # Display elimination results
+step_lmm6      # Display elimination results
 # Schritt 4
-final_fm <- get_model(step_fm)
+final_lmm6 <- get_model(step_lmm6)
 ```
 
 Kritik an Stepwise Regression (Smith 2018):
@@ -1248,20 +1252,20 @@ Kritik an Stepwise Regression (Smith 2018):
 This paper uses Monte Carlo simulations to demonstrate that a stepwise procedure may choose nuisance variables rather than true variables and that the out-of-sample accuracy of the model may be far worse than the in-sample fit. These problems are more likely to be serious when there are a large number of potential predictors. Stepwise regression does not solve the problem of Big Data. Big Data exacerbates the problems of stepwise regression.
 
 #### Pairwise Comparison bei Linear Mixed Effect Models   
+Das Paket "emmeans" ermöglicht eine *Pairwise Comparison* von linearen gemischten Modellen. 
 
-auch ham
-
-```{r}
-fm <- lmer(Informed.liking ~ Product*Information + (1|Consumer) , data=ham)
-summary(fm)
-anova(fm)
-emmip(fm, Product ~ Information)
-fm.pw <- emmeans(fm, ~ Product * Information)
-pairs(fm.pw, simple = "Product")
+Ein Beispiel für eine *Pairwise Comparison bei Linear Mixed Effect Models* anhand der "ham"-Daten aus dem "lmerTest"-Paket:
+```{r pw comp lme, echo=T}
+lmm7 <- lmer(Informed.liking ~ Product*Information + (1|Consumer) , data=ham)
+summary(lmm7)
+anova(lmm7)
+emmip(lmm7, Product ~ Information)
+lmm7_pw <- emmeans(lmm7, ~ Product * Information)
+pairs(lmm7_pw, simple = "Product")
 ```
 
 
-Das Paket "emmeans" ermöglicht eine *Pairwise Comparison* von linearen gemischten Modellen. 
+ 
 Dies funktioniert allerdings nicht, wenn der *fixed effect* - wie "Days" in diesem Fall - numerisch definiert ist. Das Modell lmm3 lässt sich nicht mit "Days" als *factor* oder *character* ausführen, weshalb zur Veranschaulichung auf das Modell lmm1 zurückgegriffen werden muss:
 
 ```{r lmm1 factor, echo=T}
@@ -1299,8 +1303,8 @@ Die Funktion ```vif()``` ist im *car*-Paket enthalten und nimmt das Modell als A
 Zur Demonstration erstellen wir ein Modell (lmm6), welches das Modell lmm3 um den *fixed effect* "VerbalFluency" erweitert:
 
 ```{r collineartiy, echo=T}
-lmm6 <- lmer(Reaction ~ Days + VerbalFluency + (1+Days|Subject), sleepstudy)
-vif(lmm6)
+lmm8 <- lmer(Reaction ~ Days + VerbalFluency + (1+Days|Subject), sleepstudy)
+vif(lmm8)
 ```
 Die beiden *fixed effects* zeigen so gut wie keine Kollinearität. Dies ist nicht verwunderlich, da es sich hier bei "VerbalFluency" um eine frei erfundene und von uns generierte Variable handelt.
 
