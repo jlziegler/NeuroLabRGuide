@@ -1220,15 +1220,24 @@ Mit dieser Methode lassen sich auch Modelle vergleichen, die sich z.B. bezüglic
 Der *Likelihood ratio test* wird auf den Seiten 11-14 von Bodo Winters Tutorial 2 genauer erklärt (siehe Abschnitt [General Mixed Models])
 
 #### Stepwise Regression    
-step() # mit ham
+Bei einer *Stepwise Regression* wird ausgehend von einem möglichst maximalen Modell berechnet, welche *fixed* und *random effects* die Daten am besten beschreiben.   
+In R wird die Funktion ```step()``` aus dem Paket "lmerTest" wie folgt verwendet:   
+1. Maximales Modell erstellen   
+2. Funktion ```step()``` auf Modell anwenden und in neuer Variable speichern    
+3. Ergebnisse der *Stepwise Regression* ausgeben
+4. Neues Modell mit der Funktion ```get_model()``` in neuer Variable speichern
 
-```{r}
+```{r stepwise regression, echo=T}
+# Schritt 1
 fm <- lmer(Informed.liking ~ Product*Information*Gender*Age +
              + (1|Consumer) + (1|Consumer:Product) +
              (1|Consumer:Information),
-           data=ham)
+           data = ham)
+# Schritt 2
 step_fm <- step(fm)
-step_fm # Display elimination results
+# Schritt 3
+step_fm      # Display elimination results
+# Schritt 4
 final_fm <- get_model(step_fm)
 ```
 
@@ -1259,7 +1268,7 @@ lmm1f <- lmer(Reaction ~ as.factor(Days) + (1|Subject), sleepstudy)
 summary(lmm1f)
 ```
 
-Wie hier zu erkennen ist, kann das Modell zwar berechnet werden, jedoch scheint R jedes Level (also jeden Tag) des *fixed effets* "Days" als einen separaten *fixed effect* anzusehen. Des Weiteren unterscheiden sich der Output von ```summary(lmm1)``` und ```summary(lmm1f)``` von einander, obwohl der Input identischs ein müsste (lediglich die Definition des *fixed effects* wurde geändert).
+Wie hier zu erkennen ist, kann das Modell zwar berechnet werden, jedoch scheint R jedes Level (also jeden Tag) des *fixed effets* "Days" als einen separaten *fixed effect* anzusehen. Des Weiteren unterscheiden sich der Output von ```summary(lmm1)``` und ```summary(lmm1f)``` von einander, obwohl der Input identisch sein müsste (lediglich die Definition des *fixed effects* wurde geändert).
 
 Nichtsdestoweniger, verwenden wir lmm1f zur Veranschaulichung der Funktionsweise von emmeans:
 ```{r emmeans, echo=T}
@@ -1422,4 +1431,6 @@ attached base packages:
 stats, graphics, grDevices, utils, datasets, methods, base
 
 other attached packages:    
-plyr_1.8.6, emmeans_1.5.0, influence.ME_0.9-9, rstatix_0.6.0, car_3.0-9, carData_3.0-4, forcats_0.5.0, stringr_1.4.0, dplyr_1.0.2, purrr_0.3.4, readr_1.3.1, tidyr_1.1.2, tibble_3.0.4, ggplot2_3.3.2, tidyverse_1.3.0, lmerTest_3.1-2, lme4_1.1-23, Matrix_1.2-18, ggsignif_0.6.0, MuMIn_1.43.17
+plyr_1.8.6, emmeans_1.5.0, influence.ME_0.9-9, rstatix_0.6.0, car_3.0-9, carData_3.0-4, forcats_0.5.0, stringr_1.4.0, dplyr_1.0.2, purrr_0.3.4, readr_1.3.1, tidyr_1.1.2, tibble_3.0.4, ggplot2_3.3.2, tidyverse_1.3.0, lmerTest_3.1-2, lme4_1.1-23, Matrix_1.2-18, ggsignif_0.6.0, MuMIn_1.43.17   
+
+***
