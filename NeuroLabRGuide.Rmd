@@ -1225,8 +1225,9 @@ In R wird die Funktion ```step()``` aus dem Paket "lmerTest" wie folgt verwendet
 1. Maximales Modell erstellen   
 2. Funktion ```step()``` auf Modell anwenden und in neuer Variable speichern    
 3. Ergebnisse der *Stepwise Regression* ausgeben
-4. Neues Modell mit der Funktion ```get_model()``` in neuer Variable speichern
+4. Neues Modell mit der Funktion ```get_model()``` in neuer Variable speichern    
 
+Ein Beispiel für eine *Stepwise Regression* anhand der "ham"-Daten:   
 ```{r stepwise regression, echo=T}
 # Schritt 1
 fm <- lmer(Informed.liking ~ Product*Information*Gender*Age +
