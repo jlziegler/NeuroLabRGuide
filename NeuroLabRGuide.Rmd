@@ -1422,4 +1422,4 @@ attached base packages:
 stats, graphics, grDevices, utils, datasets, methods, base
 
 other attached packages:    
-plyr_1.8.6, emmeans_1.5.0, influence.ME_0.9-9, rstatix_0.6.0, car_3.0-9, carData_3.0-4, forcats_0.5.0, stringr_1.4.0, dplyr_1.0.2, purrr_0.3.4, readr_1.3.1, tidyr_1.1.2, tibble_3.0.4, ggplot2_3.3.2, tidyverse_1.3.0, lmerTest_3.1-2, lme4_1.1-23, Matrix_1.2-18, ggsignif_0.6.0
+plyr_1.8.6, emmeans_1.5.0, influence.ME_0.9-9, rstatix_0.6.0, car_3.0-9, carData_3.0-4, forcats_0.5.0, stringr_1.4.0, dplyr_1.0.2, purrr_0.3.4, readr_1.3.1, tidyr_1.1.2, tibble_3.0.4, ggplot2_3.3.2, tidyverse_1.3.0, lmerTest_3.1-2, lme4_1.1-23, Matrix_1.2-18, ggsignif_0.6.0, MuMIn_1.43.17
