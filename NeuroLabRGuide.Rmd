@@ -1252,37 +1252,31 @@ Kritik an Stepwise Regression (Smith 2018):
 This paper uses Monte Carlo simulations to demonstrate that a stepwise procedure may choose nuisance variables rather than true variables and that the out-of-sample accuracy of the model may be far worse than the in-sample fit. These problems are more likely to be serious when there are a large number of potential predictors. Stepwise regression does not solve the problem of Big Data. Big Data exacerbates the problems of stepwise regression.
 
 #### Pairwise Comparison bei Linear Mixed Effect Models   
-Das Paket "emmeans" ermöglicht eine *Pairwise Comparison* von linearen gemischten Modellen. 
+Das Paket "emmeans" ermöglicht eine *Pairwise Comparison* von linearen gemischten Modellen. Dies ist wie folgt durchzuführen:   
+1. Modell definieren    
+2. Summary des Modells ausgeben (**optional**, aber informativ)   
+3. Mittels der Funktion ```anova()``` eine allgemeinere Darstellung der Effekte ausgeben (auch **optional**)   
+4. Interaktionsplot mit der Funktion ```emmip()``` anzeigen lassen (**optional**, bei mehreren *fixed effects* hilfreich)    
+5. *Estimated marginal means* der für die *Pairwise Comparison* gewünschten Faktoren mit der Funktion ```emmeans()``` berechnen und in neuer Variable speichern   
+6. *Pairwise Comparison* mit der Funktion ```pairs()``` ausgeben lassen (das Argument ```simple = ``` kann verwendet werden, um die Ausgabe nach einer Variable aufzuteilen)
 
-Ein Beispiel für eine *Pairwise Comparison bei Linear Mixed Effect Models* anhand der "ham"-Daten aus dem "lmerTest"-Paket:
+Ein Beispiel für eine *Pairwise Comparison bei Linear Mixed Effect Models* anhand der "ham"-Daten aus dem "lmerTest"-Paket, mit zwei *fixed factors*:
 ```{r pw comp lme, echo=T}
+# Schritt 1 (Einfluss von Produkt und gegebener Information auf die Bewertung)
 lmm7 <- lmer(Informed.liking ~ Product*Information + (1|Consumer) , data=ham)
+# Schritt 2
 summary(lmm7)
+# Schritt 3
 anova(lmm7)
+# Schritt 4
 emmip(lmm7, Product ~ Information)
+# Schritt 5
 lmm7_pw <- emmeans(lmm7, ~ Product * Information)
+# Schritt 6
 pairs(lmm7_pw, simple = "Product")
 ```
 
-
- 
-Dies funktioniert allerdings nicht, wenn der *fixed effect* - wie "Days" in diesem Fall - numerisch definiert ist. Das Modell lmm3 lässt sich nicht mit "Days" als *factor* oder *character* ausführen, weshalb zur Veranschaulichung auf das Modell lmm1 zurückgegriffen werden muss:
-
-```{r lmm1 factor, echo=T}
-lmm1f <- lmer(Reaction ~ as.factor(Days) + (1|Subject), sleepstudy)
-summary(lmm1f)
-```
-
-Wie hier zu erkennen ist, kann das Modell zwar berechnet werden, jedoch scheint R jedes Level (also jeden Tag) des *fixed effets* "Days" als einen separaten *fixed effect* anzusehen. Des Weiteren unterscheiden sich der Output von ```summary(lmm1)``` und ```summary(lmm1f)``` von einander, obwohl der Input identisch sein müsste (lediglich die Definition des *fixed effects* wurde geändert).
-
-Nichtsdestoweniger, verwenden wir lmm1f zur Veranschaulichung der Funktionsweise von emmeans:
-```{r emmeans, echo=T}
-lmm1f.pw <- emmeans(lmm1f, "Days")
-pairs(lmm1f.pw)
-```
- 
-Ich habe auf stackoverflow eine Frage zu diesem Thema gestellt, die unter dem folgenden Link abgerufen werden kann:
-https://stackoverflow.com/questions/65495155/pairwise-comparison-of-numeric-fixed-effect-of-linear-mixed-model
+**Hinweis:** Dies funktioniert nicht, wenn der *fixed effect* (wie "Days" aus den "sleepstudy"-Daten) numerisch ist. 
  
 ### Voraussetzungen für General Mixed Models    
 Die Voraussetzungen für *Linear Models* und *Linear Mixed Effect Models* werden auf den Seiten 12-21 von Bodo Winters Tutorial 1 genauer erklärt (siehe Abschnitt [General Mixed Models]). Im Folgenden werden grob die Funktionen in R dargestellt:
