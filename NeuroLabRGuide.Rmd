@@ -12,7 +12,6 @@ output:
 
 To-do: 
 
-- Stepwise Regression & Pairwise Comparison überarbeiten    
 - (automatische Signifkanzssterne in Plots)   
 - (Generalized Linear Mixed Effects Models)   
 - (Bayesian methods)    
