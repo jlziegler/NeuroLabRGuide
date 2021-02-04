@@ -1,14 +1,22 @@
 ---
 title: "R Guide"
 subtitle: für das Neurolinguistics Lab Mainz
-date: 'Stand: 31.01.2021'
+date: 'Stand: 04.02.2021'
 output:
   html_document:
     toc: yes
+    toc_depth: 5
     number_sections: yes
   pdf_document:
+    includes: 
+          in_header: parahdr.tex
     toc: yes
+    toc_depth: 5
+    number_sections: yes
+urlcolor: blue
+linkcolor: red
 ---
+***
 
 To-do: 
 
@@ -21,6 +29,9 @@ To-do:
 Bei Fragen, Verbesserungsvorschlägen und Anregungen gerne an <josh.ziegler@icloud.com> wenden.
 
 ***
+\newpage
+
+# R   
 
 **Was ist R?** 
 
@@ -77,6 +88,9 @@ Da auch das nicht immer hilft, empfiehlt es sich Foren, wie bspw. [Cross Validat
 * R sagt mir, dass meine Variable nicht vorhanden ist, was jedoch nicht stimmen kann. Was nun?    
   + Oft lohnt es sich zu überprüfen, ob noch ungewünschte Gruppierungen in den Daten vorhanden sind, die durch die Funktion ```group_by```ausgelöst wurden. Diese lassen sich mit der folgenden Funktion aufheben: ```data <- data %>% ungroup()```.    
 
+***
+\newpage
+
 # Setup
 Diese Guide arbeitet mit exemplarischen Daten als eine Art Blaupause für eure R-Projekte. In erster Linie wird der Datensatz **sleepstudy** aus dem Paket *lme4* verwendet:   
 
@@ -98,9 +112,11 @@ library(influence.ME) # wird für influencial data bei linear mixed effects mode
 library(emmeans) # ermöglicht pairwise comparison bei linear mixed effect models
 library(MuMIn) # ermöglicht die Ausgabe von R-Squared-Werten bei linear mixed effect models
 library(ggsignif) # ermöglicht manuelles Hinzufügen von Signifikanzsternen in Plots
-
-# Sollten diese Pakete nicht installiert sein, 
-# folgende Kommandos in der Konsole eintragen (ohne "#"):
+```
+  
+  
+Sollten diese Pakete nicht installiert sein, folgende Kommandos in der Konsole eintragen (ohne "#"):
+```{r setup install, echo=T}
 # install.packages("lme4")
 # install.packages("tidyverse")
 # install.packages("car")
@@ -112,22 +128,27 @@ library(ggsignif) # ermöglicht manuelles Hinzufügen von Signifikanzsternen in 
 # install.packages("ggsignif")
 ```
 
-# Deskriptive Statistik
+***
+\newpage
+
+# Deskriptive Statistik   
+
+## Übersicht der Daten    
 Das Kommando ```head()``` zeigt die ersten Zeilen eines Datensatzes und liefert so einen kurzen Überblick:
 ```{r sleepstudy, echo=T}
 head(sleepstudy)
 ```
-
+  
 **Übersicht über die Variablentypen:** 
 ```{r overview, echo=T}
 str(sleepstudy)
 ```
-
+  
 **Zusammenfassung der Daten:**
 ```{r summary, echo=T}
 summary(sleepstudy)
 ```
-
+  
 Für den Zweck dieser Guide erstellen wir an dieser Stelle zusätzliche Variablen (Geschlecht, Fremdsprache, Wortflüssigkeit):  
 ```{r additional data, echo=T}
 # Geschlecht
@@ -140,10 +161,10 @@ sleepstudy <- sleepstudy %>%
 # Datenkopf
 head(sleepstudy)
 ```
-
+  
 Wie sich neue Variablen erstellen lassen, wird im *swirl*-Tutorial behandelt. Weitere Übersichten zu diesem Thema finden sich bspw. [hier](https://datascienceplus.com/create-new-variable-in-r/) und [hier](https://www.datanovia.com/en/lessons/compute-and-add-new-variables-to-a-data-frame-in-r/).
-
-### Weitere nützliche Funktionen für die deskriptive Statistik:
+  
+## Weitere nützliche Funktionen für die deskriptive Statistik:   
 
 - **Arithmetisches Mittel** einer Variable: ```mean(sleepstudy$Reaction)```   
 - **Median** einer Variable: ```median(sleepstudy$Reaction)```    
@@ -153,9 +174,8 @@ Wie sich neue Variablen erstellen lassen, wird im *swirl*-Tutorial behandelt. We
 - **Anzahl** der Datenpunkte: ```nrow(sleepstudy)```  
 - **Variable erstellen**: ```sleepstudy$NewVariable <- NA```    
 - **Variable entfernen**: ```sleepstudy$NewVariable <- NULL```    
-
-
-## z-Transformation
+  
+## z-Transformation   
 Eine einfache z-Transformation wird mit der Funktion ```scale()``` durchgeführt.
 Da die Reaktionszeiten der sleepstudy zu verscheidenen Messzeitpunkten erhoben wurden, kalkulieren wir die z-Werte gruppiert nach Erhebungszeitpunkt ("group_by()").
 ```{r z transformation, echo=T}
@@ -164,14 +184,14 @@ sleepstudy <- sleepstudy %>%
   mutate(zReaction = scale(Reaction)) %>%
   ungroup()
 ```
-
-## log-Transformation
+  
+## log-Transformation   
 Die log-Transformation wird mit der Funktion ```log()``` durchgeführt:
 ```{r log, echo=T}
 sleepstudy$logReaction <- log(sleepstudy$Reaction)
 ```
-
-## Outlier
+  
+## Outlier    
 Eine elegante Methode zum identifizieren und entfernen von Outliern bietet das Paket *rstatix*:    
 Beschreibung von ```identify_outliers()``` (*rstatix* Paket):   
 *Values above Q3 + 1.5xIQR or below Q1 - 1.5xIQR are considered as outliers. Values above Q3 + 3xIQR or below Q1 - 3xIQR are considered as extreme points (or extreme outliers).*    
@@ -189,8 +209,8 @@ outliers_grouped <- sleepstudy %>%
 # Outlier ausgeben
 print(outliers_grouped)
 ```
-
-**Wie entferne ich die Outlier?**
+  
+**Wie entferne ich die Outlier?**       
 Die Anwendung der Funktion ```identify_outliers()``` auf die nach Erhebungstag (Days) gruppierten Daten ergab **acht** Outlier, wovon **sechs** als extrem eingestuft werden.
 Die Outliers sind wie folgt zu entfernen:
 ```{r remove outliers, echo=T}
@@ -205,7 +225,7 @@ outliers_grouped_extreme <-
 sleep_outliers_extreme <-
   sleepstudy[-which(sleepstudy$Reaction %in% outliers_grouped_extreme$Reaction), ]
 ```
-
+  
 Überprüfen wir die Anzahl der Datenpunkte, um sicher zu gehen, dass die richtige Anzahl an Spalten entfernt wurde:
 ```{r outlier check, echo=T}
 # Alle Outliers
@@ -213,24 +233,25 @@ nrow(sleepstudy) - nrow(sleep_outliers)
 # Nur extreme Outliers:
 nrow(sleepstudy) - nrow(sleep_outliers_extreme)
 ```
-
-(Wir speicherten hier die um die Outlier reduzierten Daten in neuen Datensätzen, damit wir die alten nicht überschreiben. Wir arbeiten der Einfachheit halber mit den Daten inklusive der Outlier weiter.)
+  
+(Wir speicherten hier die um die Outlier reduzierten Daten in neuen Datensätzen, damit wir die alten nicht überschreiben. Der Einfachheit halber wird mit den Daten inklusive der Outlier weitergearbeitet.)    
 
 ***
+\newpage
+
 # Plots   
 R bietet zahlreiche Möglichkeiten zur grafischen Darstellen von Daten (mit baseR oder zusätzlichen Paketen). Eines der am häufigsten verwendeten Pakete ist **ggplot2**, da es sich sehr frei gestalten lässt. Bis auf einige wenige Ausnahmen wird auch in dieser Guide "ggplot2" verwendet.    
-
-Zunächst erstellen wir ein neues ggplot-Element mit unserem Datensatz als Argument. Dies gilt uns als Grundlage für die Plots:
-
+  
+Zunächst erstellen wir ein neues ggplot-Element mit unserem Datensatz als Argument. Dies gilt uns als Grundlage für die Plots:    
 ```{r ggplot, echo=T}
 gg_sleep <- ggplot(sleepstudy)
 ```
-
+  
 **Hinweis:**    
 Es wäre ebenfalls möglich, bereits in der ```ggplot()```-Funktion die *aesthetics* (```aes()```) zu bestimmen. So müssten wir dies nicht bei jedem "geom" neu definieren, wie wir es in den folgenden Kapiteln tun. Ich denke, dass es im Rahmen dieser Guide der praktischere Ansatz ist, die *aesthetics* hier noch nicht zu bestimmen. Somit haben wir alle Variablen der Daten in unserem ```gg_sleep```-Element vorhanden. Dies ist jedoch sicher von Person zu Person und von Projekt zu Projekt unterschiedlich. Die verschiedenen Herangehensweisen scheinen unendlich und lassen viel Raum für experimentelles Herumprobieren.        
 In diesem Sinne: Frohes Plotten :-)
-
-## Histogramm   
+  
+## Histogramm       
 Um ein Histogramm mit ggplot2 zu erstellen, ergänzen wir unser ggplot-Element um die Funktion ```geom_histogram()```. Als x-Aesthetic legen wir die Reaktionsdaten fest. Die y-Achse soll die relative Häufigkeit angeben. Um die absolute Häufigkeit darzustellen, würden wir "..density.." durch "..count.." ersetzen.   
 Mit dem Argument ```binwidth =``` bestimmen wir die Breite der *bins*.
 ```{r histogram, echo=T}
@@ -243,8 +264,8 @@ sleep_hist <-
 # Plot ausgeben
 sleep_hist
 ```
-
-### Histogramm mit Normalverteilungskurve
+  
+### Histogramm mit Normalverteilungskurve   
 Um unserem Plot eine Normalverteilungskurve hinzuzufügen, muss das ggplot-Element um die Funktion ```stat_function()``` mit den Argumenten ```fun = dnorm``` und ```args = list()``` ergänzt werden. Innerhalb der ```list()```-Klammer geben wir die Variable an, deren Histogramm betrachtet wird. Mit dem Argument ```col = ``` können wir bestimmen, in Welcher Farbe die Kurve abgebildet werden soll:
 ```{r hist distribution, echo=T}
 # Normalverteilungskurve ergänzen und Plot in neuer Variable speichern
@@ -258,9 +279,8 @@ sleep_hist2 <-
 # Plotten
 sleep_hist2
 ```
-
+  
 Mit der Funktion ```geom_density()``` kann zusätzlich eine geglättete Version des Histogramms hinzugefügt werden:
-
 ```{r hist density curve, echo=T}
 # Geglättete Density Kurve ergänzen und in neuer Variable speichern
 sleep_hist3 <- 
@@ -271,10 +291,9 @@ sleep_hist3 <-
 # Plotten
 sleep_hist3
 ```
-
-
-## Barplots
-Barplots lassen sich durch die Funktion ```geom_bar()``` erstellen. In der ```aes()```-Klammer werden die x- und y-Achse definiert.
+  
+## Barplots   
+Barplots lassen sich durch die Funktion ```geom_bar()``` erstellen. In der ```aes()```-Klammer werden die x- und y-Achse definiert.    
 Das Argument ```stat = ``` hat folgende Inputmöglichkeiten:   
 
 - "summary" -> kalkuliert standardmäßig den Mittelwert    
@@ -287,9 +306,9 @@ gg_sleep +
            stat = "summary"
            )
 ```
-
-### Gestapelte Barplots
-Um die Daten gruppiert darzustellen, ergänzen wir in der ```aes()```-Klammer entweder das Argument ```fill = ``` oder ```col = ```. R entstellt automatisch eine Legende für die Variable, nach der gruppiert werden soll.
+  
+### Gestapelte Barplots   
+Um die Daten gruppiert darzustellen, ergänzen wir in der ```aes()```-Klammer entweder das Argument ```fill = ``` oder ```col = ```. R entstellt automatisch eine Legende für die Variable, nach der gruppiert werden soll.    
 Standardmäßig werden die Balken bei Gruppierungen gestapelt angeordnet:
 ```{r bar stacked, echo=T}
 gg_sleep + 
@@ -297,8 +316,8 @@ gg_sleep +
            stat = "summary"
            )
 ```
-
-### Nebeneinander angeordnete Barplots    
+  
+### Nebeneinander angeordnete Barplots        
 Um die Balken nebeneinander anzuordnen muss ```position = "dodge"``` in der geom_bar()-Klammer ergänzt werden:
 ```{r bar dodge, echo=T}
 # Plot erstellen
@@ -310,7 +329,7 @@ sleep_bar <- gg_sleep +
 # Plot ausgeben
 sleep_bar
 ```
-
+  
 ### Barplots mit Fehlerbalken   
 Um barplots mit Fehlerbalken mit ggplot zu erstellen, wird eine Funktion benötigt, die nicht in einem Paket erhalten ist. Wie dies funktioniert ist einer [Anleitung auf sthda.com](http://www.sthda.com/english/wiki/ggplot2-error-bars-quick-start-guide-r-software-and-data-visualization) entnommen:
 ```{r errorbar prep, echo=T, message=F}
@@ -334,7 +353,7 @@ sleep_errorbar <-
 # Betrachten der neuen Datentabelle
 head(sleep_errorbar)
 ```
-
+  
 Die neu erstellte Datentabelle wird daraufhin zum Erstellen der Grafik verwendet:   
 ```{r errorbar, echo=T}
 ggplot(sleep_errorbar, 
@@ -343,7 +362,7 @@ ggplot(sleep_errorbar,
            stat = "summary") +
   geom_errorbar(aes(ymin = Reaction-sd, ymax = Reaction+sd))
 ```
-
+  
 Ein Barplot, der dies alles **kombiniert** (also gruppiert, nebeneinander & inkl. Fehlerbalken) lässt sich wie folgt erstellen:   
 ```{r errorbar prep 2, echo=T, message=F}
 # Erstellen der neuen Datentabelle inkl. der Variable "Sex"
@@ -353,8 +372,8 @@ sleep_errorbar2 <-
 # Betrachten der zweiten neuen Datentabelle:
 head(sleep_errorbar2)
 ```
-
-Plotten:    
+  
+**Danach plotten:**    
 ```{r errorbar 2, echo=T}
 ggplot(sleep_errorbar2, 
        aes(x = Days, y = Reaction, fill = Sex)) + 
@@ -364,20 +383,20 @@ ggplot(sleep_errorbar2,
   geom_errorbar(aes(ymin = Reaction-sd, ymax = Reaction+sd),
                 position = "dodge")
 ```
-
-## Boxplots 
+  
+## Boxplots     
 Boxplots werden in ggplot mit der Funktion ```geom_boxplot()```erstellt:
 ```{r boxplot, echo = T}
 gg_sleep + 
   geom_boxplot(aes(x = Days, y = Reaction, fill = Sex))
 ```
+    
 Dieser Plot stellt nicht das dar, was wir wollten, da "Days" als numerische Variable konfiguriert ist. Mit dem Befehl ```as.factor()``` oder ```as.character()``` lässt sich dies korrigieren:
-
 ```{r to_factor, echo=T}
 gg_sleep + 
   geom_boxplot(aes(x = as.factor(Days), y = Reaction, fill = Sex))
 ```
-
+  
 ## Scatterplots   
 Für Scatterplots wird die Funktion ```geom_point()``` verwendet:    
 ```{r scatterplot, echo=T}
@@ -387,8 +406,8 @@ sleep_point <- gg_sleep +
 # Plotten
 sleep_point
 ```
-
-### Regressionsgeraden 
+  
+### Regressionsgeraden    
 Um eine Regressionsgerade zu ergänzen, wird die Funktion ```geom_smooth()``` verwendet.   
 Ein Blick in die *Help-Page* mittels ```?geom_smooth``` liefert weitere Informationen zu den Argumenten ```method = ``` und ```se = ```.   
 ```{r regression, echo=T}
@@ -398,18 +417,16 @@ sleep_point +
               se = F
               )
 ```
-
+  
 Auch hier ließen sich mit dem Argument ```fill = ``` gruppierte Regressionsgeraden erstellen.
-
-### Interaktionsplot    
+  
+### Interaktionsplot        
 Ein Interaktionsplot lässt sich einfach mit *baseR* erstellen. Dazu werden die benötigten Variablen in folgender Reihenfolge als Argumente der Funktion ```interaction.plot()``` geschrieben:    
 ```interaction.plot(x-Achse, Gruppierung, y-Achse)```
-
 ```{r interaction plot, echo=T}
 interaction.plot(sleepstudy$Days, sleepstudy$Sex, sleepstudy$Reaction)
 ```
-
-bei geom_line group = mit angeben!
+    
 Mit ggplot sind Interaktionsplots ein wenig komplizierter. Benötigt wird die Funktion ```geom_line()```. Wichtig ist hierbei, dass die Argumente ```stat = "summary"```und ```fun = "mean"``` ergänzt werden, sowie die Gruppierung auch mit dem Argument ```group = ``` gekennzeichnet wird.    
 Die Funktion ```geom_point()``` kann optional verwendet werden, um Punkte an den unterschiedlichen Ausprägungen der unabhängigen Variable auf der x-Achse anzuzeigen:
 ```{r interaction plot gg, echo=T}
@@ -422,25 +439,25 @@ gg_sleep +
             )
 ```
 
-
-## Q-Q-Plot
+  
+## Q-Q-Plot   
 Mit *baseR*:
 ```{r qq base, echo=T}
 qqnorm(sleepstudy$Reaction)   # Punkte
 qqline(sleepstudy$Reaction)   # Linie
 ```
 
-Mit *ggplot*:
+Mit *ggplot*:   
 ```{r qq gg, echo=T}
 gg_sleep + 
   stat_qq(aes(sample = Reaction)) +    # Punkte
   stat_qq_line(aes(sample = Reaction)) # Linie
 ```
-
-### Textplots
-Um Text zu plotten werden die Funktionen ```geom_text``` oder ```geom_label```. Der Unterschied besteht darin, dass letztere zusätzlich einen Kasten um den Text generiert. Innerhalb der ```aes()```-Klammer wird das Argument ```label =``` benötigt, welches definiert, aus welcher Variable der Text entnommen werden soll.   
-
-**Anmerkung:**
+  
+### Textplots   
+Um Text zu plotten werden die Funktionen ```geom_text``` oder ```geom_label``` verwendet. Der Unterschied besteht darin, dass letztere zusätzlich einen Kasten um den Text generiert. Innerhalb der ```aes()```-Klammer wird das Argument ```label =``` benötigt, welches definiert, aus welcher Variable der Text entnommen werden soll.   
+  
+**Anmerkung:**    
 Da es sich beim Datensatz ```sleepstudy``` um Messwiederholungsdaten handelt, wäre eine Darstellung der Datenpunkte mit Text sehr unübersichtlich. Wir generieren also zunächst eine neue Tabelle, die den Mittelwert der Reaktionsszeit nach Tag und Geschlecht berechnet.    
 Die Notation ```dplyr::``` wird verwendet, damit R weiß, dass die Funktionen aus dem "dplyr"-Paket verwendet werden, nicht die gleichnamigen aus dem "plyr"-Paket.
 ```{r text plot, echo=T}
@@ -454,15 +471,15 @@ daily_means <- sleepstudy %>%
 ggplot(daily_means) + 
   geom_text(aes(x = Days, y = meanReaction, label = Sex))
 ```
-
-## Weitere Funktionen für Plots  
+  
+## Weitere Funktionen für Plots     
 In diesem Kapitel wird dargestellt, wie *ggplot2*-Plots modifiziert werden können.    
 Hierzu werden die Plots ```sleep_bar``` aus Kapitel [Nebeneinander angeordnete Barplots] und X verwendet.    
 Die hier gezeigten Funktionen stellen nur einen kleinen Ausschnitt dessen dar, was mit *ggplot2* möglich ist. Außerdem gilt auch hier, dass es oft viele verschiedene Herangehensweisen gibt. Eine umfassende Guide gibt es unter anderem auf [sthda.com](http://www.sthda.com/english/wiki/ggplot2-essentials).    
-
+  
 **Achtung:** Eine Erweiterung des Plots in einzelnen Schritten eignet sich hier zur Darstellung der Funktionen. In der Praxis kann dies zu Problemen führen, da sich einige Funktionen gegenseitig überschreiben (z.B. ```scale_x_continuous``` und ```scale_x_reverse```, siehe Kapitel [Achsen- und Legendenbeschriftung] und [Weitere (grafische) Transformationen]).    
-
-### Titel
+  
+### Titel   
 Durch die Funktion ```labs()``` können der **Haupttitel** (-> ```title =```), die **Achsentitel** (-> ```x =``` & ```y = ```) und **Legendentitel** (-> ```fill = ``` & ```colour = ```) definiert werden: 
 ```{r title, echo=T}
 # Plot erstellen
@@ -474,10 +491,9 @@ sleep_bar_title <- sleep_bar +
 # Plot ausgeben
 sleep_bar_title
 ```
-
+  
 Die Form der Titel kann mit der Funktion ```theme()``` verändert werden. Ein Blick in die Help-Page (mit ```?theme```) liefert eine Übersicht der zahlreichen Möglichkeiten und deren Anwendungen.     
 Ein Beispiel:
-
 ```{r title2, echo=T}
 # Plot erstellen
 sleep_bar_title2 <- sleep_bar_title + 
@@ -493,9 +509,8 @@ sleep_bar_title2 <- sleep_bar_title +
 # Plot ausgeben
 sleep_bar_title2
 ```
-
-
-### Achsen- und Legendenbeschriftung
+  
+### Achsen- und Legendenbeschriftung    
 Die Beschriftungen der Achsen- und Legendeneinheiten lassen sich durch die Funktionen mit Präfix ```scale_``` bearbeiten.   
 Numerische Variablen erfordern das Suffix ```_conituous```, Faktoren und *Characters* das Suffix ```_discrete```.  
   
@@ -503,7 +518,6 @@ Dementsprechend können wir die x-Achse, auf der die numerische Variable "Days" 
 Mit dem Argument ```breaks =``` geben wir an, an welchen Zeitpunkten eine Achsenbeschriftung vorhanden sein soll. Mit dem Argument ```labels =``` können diese noch eine neue Beschriftung erhalten.   
   
 Die *breaks* der y-Achse definieren wir durch die Funktion ```seq```, wobei die erste und zweite Zahl den Bereich markieren, für welchen die Beschriftung im Abstand der dritten Zahl erfolgen.   
-  
   
 Die Legende, welche wir durch ```fill = Sex``` definiert haben erfordert für den Faktor "Sex" die Funktion ```scale_fill_discrete```. 
 
@@ -518,11 +532,11 @@ sleep_bar_axis <- sleep_bar_title2 +
 # plotten
 sleep_bar_axis
 ```
-
+  
 R ordnet *Factors* und *Characters* automatisch alphabetisch. Wenn diese auch in der Tabelle anders angeordnet sein sollen, müsste das bereits vor der Erstellung des *ggplot*-Objekts (in unserem Fall ```gg_sleep```) wie folgt passieren:    
 ```sleepstudy$Sex <- factor(sleepstudy$Sex, levels = c("m", "f"))```
-
-### Farben
+  
+### Farben    
 Die Farben des Plots können mithilfe der folgenden Funktionern verändert werden:    
 
 - ```scale_fill_manual``` (wenn wir die Gruppierung über ```fill =``` erstellt haben) oder    
@@ -538,11 +552,9 @@ sleep_bar_col <- sleep_bar_axis +
 # Plotten
 sleep_bar_col
 ```
-  
-
+    
 Ungruppierte Plots lassen sich durch die Argumente ```fill =``` und ```col =``` färben. Diese Argumente stehen **nicht** in der ```aes()```-Klammer!    
 Ein Beispiel, wie wir den Plot aus dem Kapitel [Barplots] ergänzen könnten:
-
 ```{r plot colours not grouped, echo=T}
 gg_sleep + geom_bar(aes(x = Days, y = Reaction), 
                     stat = "summary",
@@ -550,11 +562,10 @@ gg_sleep + geom_bar(aes(x = Days, y = Reaction),
                     col = "orange"         # Rand
                     )
 ```
-
-#### Paletten
+  
+#### Paletten   
 *ggplot2* verfügt über die Farbpaletten des Pakets [RColorBrewer](https://www.datanovia.com/en/blog/the-a-z-of-rcolorbrewer-palette/). Diese lassen sich mit den Funktionen ```scale_fill_brewer``` oder ```scale_colour_brewer``` abrufen - je nachdem, ob ```fill =``` und/oder ```colour =``` für die Gruppierung verwendet wurden.   
 Im folgenden Beispiel wird die Palette "Pastel2" verwendet. Die *labels* werden wie bereits im Kapitel [Farben] erneut definiert, damit sie nicht überschrieben werden.
-
 ```{r bar palette, echo=T}
 # Plot erstellen
 sleep_bar_pal <- sleep_bar_col + 
@@ -563,10 +574,9 @@ sleep_bar_pal <- sleep_bar_col +
 # Plotten
 sleep_bar_pal
 ```
-
-#### Entfärben
-Die Funktionen ```scale_fill_grey``` und ```scale_colour_grey``` legen eine Palette aus verschiedenen Grautönen über die Gruppierungen:
-
+  
+#### Entfärben    
+Die Funktionen ```scale_fill_grey``` und ```scale_colour_grey``` legen eine Palette aus verschiedenen Grautönen über die Gruppierungen:   
 ```{r bar bw, echo=T}
 # Plot erstellen
 sleep_bar_bw <- sleep_bar_pal + 
@@ -574,9 +584,8 @@ sleep_bar_bw <- sleep_bar_pal +
 # Plotten
 sleep_bar_bw
 ```
-
-
-#### *Themes*
+  
+#### *Themes*   
 Das Aussehen der nicht-Daten komponenten lässt sich auch über sogenannte *themes* anpassen. Dies resultiert in einem einheitlichen Erscheinungsbild. Es stehen die Funktionen ```theme_grey```, ```theme_bw```, ```theme_linedraw```, ```theme_light```, ```theme_dark```, ```theme_minimal```, ```theme_classic``` & ```theme_void``` zur Verfügung.    
 
 Die Funktion ```theme_minimal``` überschreibt hier, was wir im Kapitel [Titel] in der ```themes()```-Klammer definiert haben, weshalb der Titel der x-Achse wieder angezeigt wird, der Legendentitel in der ursprünglichen Größe vorhanden ist und der Haupttitel nicht mehr zentriert ist.
@@ -587,8 +596,8 @@ sleep_bar_min <- sleep_bar_bw +
 # Plotten
 sleep_bar_min
 ```
-
-### Weitere (grafische) Transformationen
+  
+### Weitere (grafische) Transformationen    
   
 - Achsen spiegeln: ```scale_x_reverse()``` oder ```scale_y_reverse()```     
   - **Achtung:** Überschreibt andere ```scale_```-Funktionen der jeweiligen Achse!    
@@ -605,34 +614,36 @@ sleep_bar_trans <- sleep_bar_min +
 sleep_bar_trans
 ```
 
-### Aufgeteilte Plots
+### Aufgeteilte Plots   
 Plots lassen sich mit Hilfe der Funktion ```facet_grid()``` nach Variablen Aufteilen.
 Wir verwenden hierfür wieder den farbigen Plot aus dem Kapitel [Paletten].    
-
+  
 **Plots aufgeteilt nach Sprache:**
 ```{r plot facet, echo=T}
 sleep_bar_pal + 
   facet_grid(~ Language) 
 ```
-
+  
 **Plots aufgeteilt nach Sprache und Geschlecht:**
 ```{r plot facet 2, echo=T}
 sleep_bar_pal + 
   facet_grid(Sex ~ Language) 
 ```
+  
+*(Dieser Plot macht in diesem Fall natürlich nur bedingt Sinn, da wir bereits nach Geschlecht farbig gruppiert haben.)*    
 
-*(Dieser Plot macht in diesem Fall natürlich nur bedingt Sinn, da wir bereits nach Geschlecht farbig gruppiert haben.)*
-
-### Formen von Punkten
+### Formen von Punkten    
 Die Formen von Scatterplots, bzw. Punktediagrammen, lassen sich in *ggplot2* auf verschiedenste Arten gestalten. Eine Übersicht über die Formen gibt es auf [sthda.com](http://www.sthda.com/english/wiki/ggplot2-point-shapes).    
 
 Es stehen die Argumente ```shape =```, ```col =```, und ```size =``` zur Verfügung. Werden diese außerhalb der ```aes()```-Klammer definiert, gilt die Formatierung für alle Punkte, und ist somit **ungruppiert:**
 ```{r plot shape, echo=T}
 gg_sleep + 
-  geom_point(aes(x = Days, y = Reaction), shape = 1, col = "red", size = 3)
+  geom_point(aes(x = Days, y = Reaction), 
+             shape = 1, 
+             col = "red", 
+             size = 3)
 ```
-
-
+  
 Werden sie innerhalb der Klammer definiert, werden die Punkte nach der angegebenen Variable in ihrer Form verändert **gruppiert**:
 ```{r plot shape grouped, echo=T}
 # Plot erstellen
@@ -641,7 +652,7 @@ sleep_point2 <- gg_sleep +
 # Plotten
 sleep_point2
 ```
-
+  
 Um die Form im nachhinein zu verändern können die Funktionen ```scale_shape_manual```, ```scale_colour_manual``` und ```scale_size_manual``` wie folgt verwendet werden:
 ```{r plot shape manual, echo=T}
 sleep_point2 +
@@ -649,11 +660,11 @@ sleep_point2 +
   scale_colour_manual(values = c("#e9c46a", "#2a9d8f")) +
   scale_size_manual(values = c(1,2))
 ```
-
-### Formen von Linien
+  
+### Formen von Linien   
 Die Formen von Linien lassen sich durch das Argument ```linetype =```bestimmen. Es stehen folgende Möglichkeiten zur Auswahl: “blank”, “solid”, “dashed”, “dotted”, “dotdash”, “longdash”, “twodash”.    
 
-Wie in vorherigen Beispielen zu ```shape =``` und ```fill =``` kommt es darauf an, ob ```linetype =``` innerhalb der ```aes()```-Klammer steht oder nicht. 
+Wie in vorherigen Beispielen zu ```shape =``` und ```fill =``` kommt es darauf an, ob ```linetype =``` innerhalb der ```aes()```-Klammer steht oder nicht.    
 
 Steht es nicht in der Klammer gilt die Formatierung für alle Linien, und ist somit **ungruppiert:**
 ```{r line shape ungrouped, echo=T}
@@ -662,9 +673,8 @@ gg_sleep +
             stat = "summary", fun = "mean",
             linetype = "dotted")
 ```
-
-
-Steht ```linetype =``` innerhalb der ```aes()```-Klammer werden die Linien nach der angegeben Variable in unterschiedlichen Linienformen **gruppiert:**
+  
+Steht ```linetype =``` innerhalb der ```aes()```-Klammer werden die Linien nach der angegeben Variable in unterschiedlichen Linienformen **gruppiert:**   
 ```{r line shape grouped, echo=T}
 # Plot erstellen
 sleep_line <- gg_sleep + 
@@ -674,7 +684,7 @@ sleep_line <- gg_sleep +
 sleep_line
 ```
 
-Um die Linienformen manuell zu verändern wird ähnlich der Beeinflussung von Farbe und Form die Funktion ```scale_linetype_manual(values = c())```.
+Um die Linienformen manuell zu verändern wird ähnlich der Beeinflussung von Farbe und Form die Funktion ```scale_linetype_manual(values = c())```.   
 
 ### Text im Plot
 Um Text innerhalb der Plots zu ergänzen wird die Funktion ```annotate``` verwendet:  
@@ -688,9 +698,8 @@ sleep_line +
            colour = "darkblue",  # Farbe
            size = 5)             # Größe
 ```
-
-
-### Signifikanzsterne
+  
+### Signifikanzsterne   
 Signifikanzsterne lassen sich **manuell** hinzufügen. Dazu wird die Funktion ```geom_signif``` aus dem "ggpubr"-Paket verwendet. Die benötigten Argumente werden wie folgt benutzt:    
 
 - Mit ```xmin()``` und ```xmax()``` wird angegeben, welche Punkte auf der x-Achse mit Signifikanzssternen versehen werden sollen.   
@@ -709,7 +718,7 @@ gg_sleep +
               )
 ```
 
-Um signifikante Unterschiede zwischen Gruppen zu markieren, wird bei ```xmin``` und ```xmax``` der gleiche Wert angegeben. 
+Um signifikante Unterschiede zwischen Gruppen zu markieren, wird bei ```xmin``` und ```xmax``` der gleiche Wert angegeben.    
 
 ```{r plot significance group, echo=T}
 gg_sleep + 
@@ -721,14 +730,14 @@ gg_sleep +
               annotations = c("***", "*")  # Signifikanzsterne/Text
               )
 ```
+  
+Signifkanzsterne können auch **automatisch** mit [ggsignif](https://const-ae.github.io/ggsignif/) oder dem Paket [ggpubr](http://www.sthda.com/english/articles/24-ggpubr-publication-ready-plots/76-add-p-values-and-significance-levels-to-ggplots/#compare-more-than-two-groups) - einer Erweiterung von "ggsignif" - ergänzt werden. Wie das geht, steht in den verlinkten Guides (evtl. wird dies hier zu einem späteren Zeitpunkt ergänzt).   
 
-Signifkanzsterne können auch **automatisch** mit [ggsignif](https://const-ae.github.io/ggsignif/) oder dem Paket [ggpubr](http://www.sthda.com/english/articles/24-ggpubr-publication-ready-plots/76-add-p-values-and-significance-levels-to-ggplots/#compare-more-than-two-groups) - einer Erweiterung von "ggsignif" - ergänzt werden. Wie das geht, steht in den verlinkten Guides (evtl. wird dies hier zu einem späteren Zeitpunkt ergänzt).
-
-### Plot speichern
+### Plot speichern    
 **ggplots** lassen sich entweder direkt über das "Plots"-Fenster in *RStudio* speichern, oder aber mit der Funktion ```ggsave()```.     
 Der folgende Beispielcode ist auskommentiert, damit nicht bei jedem *Knit* eine Datei gespeichert wird.   
 
-**Achtung:** Ist im Ordner in dem die Datei gespeichert werden soll eine Datei mit dem gleichen Namen, wird diese überschieben, ohne das R euch warnt oder fragt.
+**Achtung:** Ist im Ordner in dem die Datei gespeichert werden soll eine Datei mit dem gleichen Namen, wird diese überschieben, ohne das R euch warnt oder fragt. 
 
 ```{r ggsave, echo=T}
 # ggsave("filename.jpg", plot = sleep_point2)
@@ -741,10 +750,13 @@ Weitere Informationen:
 - Weitere Möglichkeiten (z.B. Bestimmen der Größe der Grafik) können der *Help-Page* entnommen werden (```?ggsave```)
 
 ***
+\newpage
+
 # Inferenzstatistik   
 
 ### Testen der Normalverteilung   
 Die Normalverteilung lässt sich mit Hilfe des Shapiro-Wilk Tests oder anhand eines Q-Q Plots überprüfen:
+
 ```{r shapiro wilk, echo=T}
 # Shapiro-Wilk Test
 shapiro.test(sleepstudy$Reaction)
@@ -753,30 +765,33 @@ shapiro.test(sleepstudy$Reaction)
 qqnorm(sleepstudy$Reaction)
 qqline(sleepstudy$Reaction)
 ```
-
+  
 Gruppierter Shapiro-Wilk Test mit dem *rstatix* Paket:
+
 ```{r shapiro wilk grouped, echo=T}
 sleepstudy %>%
   group_by(Days) %>%  # weitere unabhängige Variablen durch Komma getrennt
   shapiro_test(Reaction)
 ```
-
+  
 ### Testen der Varianzhomogenität   
 Die Varianzhomogenität (auch Homoskedastizität) lässt sich mit dem Levene Test überprüfen:
+
 ```{r homoscedasticity, echo=T}
 # bei einer abhängigen Variable:
 leveneTest(Reaction ~ Sex, data = sleepstudy)
 # bei mehreren abhängigen Variablen:
 leveneTest(Reaction ~ Sex*Language, data = sleepstudy)
 ```
-
+  
 Gruppierter Levene Test mit dem *rstatix* Paket:
+
 ```{r homoscedasticity grouped, echo=T}
 sleepstudy %>%
   group_by(Days) %>% # weitere unabhängige Variablen durch Komma getrennt
   levene_test(Reaction ~ Sex)
 ```
-
+  
 ## Parametrische Tests    
 ### t-Test        
 #### t-Test für unabhängige Stichproben   
@@ -795,7 +810,7 @@ leveneTest(Reaction ~ Sex, data = day1)
 # t-test für unabhängige Stichproben
 t.test(Reaction ~ Sex, data = day1)
 ```
-
+  
 #### t-Test für abhängige Stichproben   
 Für den t-Test für abhängige Stichproben erstellen wir hier einen Datensatz mit **einer Messwiederholung**, der nur aus den Messungen des **ersten** und des **neunten Tages** besteht. Anschließend testen wir zur Verdeutlichung erneut, ob die Daten normalverteilt sind und ob Varianzhomogenität vorliegt.    
 Damit R weiß, dass es sich um einen t-test für abhängige Stichproben handelt, wird in der Funktionsklammer ```paired = T``` ergänzt.
@@ -812,13 +827,13 @@ leveneTest(Reaction ~ as.factor(Days), data = day1_9)
 # t-test für unabhängige Stichproben
 t.test(Reaction ~ Days, data = day1_9, paired = T)
 ```
-
+  
 ### Anova   
 Die Tests nach Normalverteilung und Varianzhomogenität sind analog zur Darstellung in den jeweiligen Kapiteln:    
 
 - [Testen der Normalverteilung]   
 - [Testen der Varianzhomogenität]
-
+  
 #### Univariate einfaktorielle ANOVA    
 Die univariate einfaktorielle ANOVA wird nach dem folgenden Schema durchgeführt:   
 ```aov(dependent variable ~ independent variable, data = data)```   
@@ -834,7 +849,7 @@ pairwise.t.test(day1$Reaction, day1$Language, p.adj = "bonf")
 # Oder: post-hoc TukeyHSD
 TukeyHSD(anova1)
 ```
-
+  
 #### Univariate multifaktorielle ANOVA    
 Die univariate multifaktorielle ANOVA wird nach dem folgenden Schema durchgeführt:   
 ```aov(dependent variable ~ independent variable1 * independent variable2, data = data)``` 
@@ -847,7 +862,7 @@ summary(anova2)
 # post-hoc TukeyHSD
 TukeyHSD(anova2)
 ```
-
+  
 #### Multivariate einfaktorielle ANOVA    
 Die univariate einfaktorielle ANOVA wird nach dem folgenden Schema durchgeführt:   
 ```manova(cbind(dependent variable1, dependent variable2) ~ independent variable, data = data)```
@@ -860,9 +875,9 @@ summary(manova1)
 # Ergebnisse (aufgeteilt nach abhängigen Variablen)
 summary.aov(manova1)
 ```
-Post-hoc Tests für Multivariate ANOVA müssen für jede Variable einzeln berechnet werden, siehe Kapitel [Univariate einfaktorielle ANOVA].
-
-#### Multivariate multifaktorielle ANOVA    
+Post-hoc Tests für Multivariate ANOVA müssen für jede Variable einzeln berechnet werden, siehe Kapitel [Univariate einfaktorielle ANOVA].    
+  
+#### Multivariate multifaktorielle ANOVA        
 Die univariate einfaktorielle ANOVA wird nach dem folgenden Schema durchgeführt:   
 ```manova(cbind(dependent variable1, dependent variable2) ~ independent variable1 * independent variable2, data = data)```
 ```{r manova2, echo=T}
@@ -874,10 +889,10 @@ summary(manova2)
 # Ergebnisse (aufgeteilt nach abhängigen Variablen)
 summary.aov(manova2)
 ```
-Post-hoc Tests für Multivariate ANOVA müssen für jede Variable einzeln berechnet werden, siehe Kapitel [Univariate multifaktorielle ANOVA].
-
+Post-hoc Tests für Multivariate ANOVA müssen für jede Variable einzeln berechnet werden, siehe Kapitel [Univariate multifaktorielle ANOVA].    
+  
 #### One-way repeated measures ANOVA    
-*One-way repeated measures ANOVAs* lassen sich zwar auch gut mit *baseR*-Funktionen durchführen, allerdings möchte ich an dieser Stelle auch auf das Paket *rstatix* hinweisen.
+*One-way repeated measures ANOVAs* lassen sich zwar auch gut mit *baseR*-Funktionen durchführen, allerdings möchte ich an dieser Stelle auch auf das Paket *rstatix* hinweisen.    
 
 ##### mit *rstatix*   
 Damit die Funktionen des *rstatix* Pakets funktionieren, dürfen sich im Datensatz nur die abhängigen Variablen im Datensatz befinden, die auch beobachtet werden sollen:
@@ -886,7 +901,7 @@ Damit die Funktionen des *rstatix* Pakets funktionieren, dürfen sich im Datensa
 sleepstudy2 <- 
   sleepstudy[, c("Reaction", "Subject", "Language", "Days")]
 ```
-
+  
 **Berechnung:**   
 Aus der Anleitung entnommene Definitionen für die Argumente der Funktion ```anova_test()```:    
 
@@ -905,7 +920,7 @@ ranova1x <- anova_test(
 # Ergebnisse 
 get_anova_table(ranova1x)
 ```
-
+  
 **Post-Hoc Test:**    
 Der post-hoc Test für *one-way repeated measures ANOVAs* mit *rstatix* wird mit Hilfe der Funktion ```pairwise_t_test()```durchgeführt:
 ```{r ranova1x post hoc, echo=T}
@@ -915,27 +930,27 @@ sleepstudy2 %>%
     p.adjust.method = "bonferroni"
     )
 ```
-
+  
 ##### mit *baseR*   
 
 ```{r ranova1, echo=T}
 ranova1 <- aov(Reaction ~ Days + Error(Subject), data = sleepstudy)
 summary(ranova1)
 ```
-
+  
 Der post-Hoc Test für *one-way repeated measures ANOVAs* mit *baseR* wird wie im Kapitel [Univariate einfaktorielle ANOVA] durchgeführt, jedoch ergänzen wir ```paired = TRUE```:
 ```{r ranova1 post hoc, echo=T}
 pairwise.t.test(sleepstudy$Reaction, sleepstudy$Days, 
                 p.adj = "bonf", 
                 paired = TRUE)
 ```
-
+  
 #### Two-way repeated measures ANOVA    
 Auch *two-way repeated measures ANOVAs* lassen sich mit *baseR*-Funktionen und *rstatix*  durchführen. Für post-hoc Tests muss in jedem Fall auf *rstatix* zurückgegriffen werden.
-
+  
 ##### mit *rstatix*   
-Auch hier gelten die Voraussetzungen, damit die Funktionen des *rstatix* Pakets funktionieren (siehe [One-way repeated measures ANOVA mit *rstatix*]).
-
+Auch hier gelten die Voraussetzungen, damit die Funktionen des *rstatix* Pakets funktionieren (siehe [One-way repeated measures ANOVA mit *rstatix*]).   
+  
 **Berechnung:**   
 Wir ergänzen hier beispielsweise den *between-subjects* Faktor "Language":
 ```{r ranova2x, echo=T}
@@ -947,9 +962,9 @@ ranova2x <- anova_test(
 # Ergebnisse
 get_anova_table(ranova2x)
 ```
-
+  
 Es ließen sich auch weitere *within-* oder *between-subjects* Faktoren einbeziehen. Dies erfolgt nach dem folgenden Muster: ```within = c(Variable1, Variable2)```
-
+  
 **Post-Hoc-Tests**    
 (vgl. https://www.datanovia.com/en/lessons/repeated-measures-anova-in-r/)   
 Zunächst können in einem ersten Schritt die p-Werte des Effekts unserer unabhängigen Variable pro Zeitpunkt berechnet werden:
@@ -962,7 +977,7 @@ sleepstudy2 %>%
   get_anova_table() %>%
   adjust_pvalue(method = "bonferroni")
 ```
-
+  
 Für die Berechnung der post-hoc Tests von two-way repeated measures ANOVAs wird im Vergleich zum Kapitel **One-way repeated measures ANOVA** [mit *rstatix*] eine Gruppierung ("group_by()") nach Messzeitpunkt vorgenommen. In der Klammer der "pairwise_t_test()"-Funktion steht unsere abhängige und die unabhängige Variable, die uns interessiert:
 ```{r ranova2x post hoc, echo=T}
 # Pairwise comparison zwischen Sprachen pro Tag
@@ -973,11 +988,11 @@ sleepstudy2 %>%
     p.adjust.method = "bonferroni"
     )
 ```
-
+  
 ##### mit *baseR*   
 Um eine *two-way repeated measures ANOVA* in *baseR* durchzuführen, gehen wir nach folgendem Schema vor:   
 ```aov(dependent variable ~ independent variable1 * independent variable2 + Error(ID/within-subject-conditions), data = data)```    
-Das bedeutet: 
+Das bedeutet:     
 
 - unsere *independent variables* werden durch einen Asterisk getrennt   
 - wir ergänzen einen Error()-Term   
@@ -989,7 +1004,7 @@ ranova2 <- aov(Reaction ~ Language*Days + Error(Subject/Days),
 # Ergebnisse
 summary(ranova2)
 ```
-
+  
 Für den Post-Hoc Test müssen wir bei der two-way repeated measures ANOVA mit *baseR* auf das *rstatix* Paket zurückgreifen:
 ```{r ranova2 post hoc, echo=T}
 sleepstudy %>%
@@ -998,37 +1013,38 @@ sleepstudy %>%
   get_anova_table() %>%
   adjust_pvalue(method = "bonferroni") 
 ```
-
+  
 ## Non-parametrische Tests    
 
-### Mann-Whitney-U Test   
+### Mann-Whitney-U Test       
 Non-parametrische Alternative für [t-Test für unabhängige Stichproben].
 Wir verwenden wieder die gefilterten Daten, nur mit Tag 1 (day_1) und gehen davon aus, dass unsere Reaktionszeiten nicht Normalverteilt sind.
 ```{r MWU, echo=T}
 wilcox.test(Reaction ~ Sex, data = day1)
 ```
-
+  
 ### Wilcoxon-Test   
 Non-parametrische Alternative für [t-Test für abhängige Stichproben].
 Wir verwenden wieder die gefilterten Daten, nur mit Tag 1 und 9 (day1_9) und gehen davon aus, dass unsere Reaktionszeiten nicht Normalverteilt sind.
 ```{r wilcoxon, echo=T}
 wilcox.test(day1_9$Reaction, day1_9$Days)
-```
-
+``` 
+  
 ### Kruskal-Wallis-Test   
 Non-parametrische Alternative für [Univariate einfaktorielle ANOVA].
 ```{r kruskal wallis, echo=T}
 kruskal.test(Reaction ~ Language, data = day1)
 ```
-
+  
 ### Friedman-Test   
 Non-parametrische Alternative für [One-way repeated measures ANOVA].
 Wir verwenden hierfür die Funktion ```friedman_test()```aus dem *rstatix* Paket und nehmen zur Demonstration an, dass die Reaktionszeiten nicht normalverteilt sind.
 ```{r friedman, echo=T}
 sleepstudy %>% friedman_test(Reaction ~ Days | Subject)
 ```
-Zusätzlich zum p-Wert wird uns unter *statistic* der Chi-Quadrat Wert ausgegeben.
-
+  
+Zusätzlich zum p-Wert wird uns unter *statistic* der Chi-Quadrat Wert ausgegeben.   
+  
 Post-Hoc-Tests:
 ```{r friedman ph, echo=T}
 sleepstudy %>% 
@@ -1036,8 +1052,8 @@ sleepstudy %>%
               paired = TRUE, 
               p.adjust.method = "bonferroni")
 ```
-
-### Chi-Quadrat-Test    
+  
+### Chi-Quadrat-Test        
 Der Chi-Quadrat-Test wird hier verwendet, um zu testen, ob Geschlecht und Sprache unabhängig voneinander sind.
 ```{r chi, echo=T}
 # Kreuztabelle
@@ -1045,35 +1061,38 @@ table(day1$Sex, day1$Language)
 # Chi-Quadrat-Test
 chisq.test(day1$Sex, day1$Language)
 ```
+  
 Die Warnungmeldung "Chi-Quadrat-Approximation kann inkorrekt sein" deutet darauf hin, dass zu viele Zellhäufigkeiten (mehr als 20%) unter 5 liegen. Dazu schauen wir uns die erwarteten Häufigkeiten an.
 
 ```{r chi expected, echo=T}
 # Erwartete Häufigkeiten
 chisq.test(day1$Sex, day1$Language)$expected
 ```
+  
 In diesem Fall liegen alle (>20%) Zellhäufigkeiten unter 5. Es sollte also zusätzlich der [Fisher-Test] gerechnet werden.
-
-### Fisher-Test   
+  
+### Fisher-Test       
 Zusätzlich zum [Chi-Quadrat-Test] bei Zellhäufigkeiten unter 5.
 ```{r fisher, echo=T}
 # Fisher-Test
 fisher.test(day1$Sex, day1$Language)
 ```
-
+  
 ### McNemar-Test    
 Zur Veranschaulichung des McNemar-Tests verwenden wir die ```day1_9```-Daten und kreiieren eine neue Variable (*RT_Verteilung*), die angibt, ob die Reaktionszeit über oder unter dem Mittelwert liegt.
 ```{r RT_Verteilung, echo=T}
 day1_9$RT_Verteilung <- 
   ifelse(day1_9$Reaction >= mean(day1_9$Reaction), "higher", "lower")
 ```
+  
+Als nächstes sind einige Schritte notwendig:  
 
-Als nächstes sind einige Schritte notwendig:
-1. Alle für den McNemar-Test unwichtigen Spalten entfernen. Wir benötigen nur die Variablen "Subject", "Days" und "RT_Verteilung".
-2. Die Daten mithilfe der Funktion *pivot_wider()* [tidyr] aus dem *long format* in das *wide format* umwandeln.
-3. Hier haben wir ein Problem: Unsere neuen Variablen tragen die Namen der Tage (Variable "Days"), also "1" und "9". Variablennamen die nur aus Zahlen bestehen gefallen R gar nicht. Also benennen wir sie mithilfe der colnames()-Funktion um.
-4. Erstellen einer Contingency-Tabelle.
-5. Ausgeben der Tabelle inklusive Summen.
-6. Rechnen des McNemar-Tests
+1. Alle für den McNemar-Test unwichtigen Spalten entfernen. Wir benötigen nur die Variablen "Subject", "Days" und "RT_Verteilung".    
+2. Die Daten mithilfe der Funktion *pivot_wider()* [tidyr] aus dem *long format* in das *wide format* umwandeln.    
+3. Hier haben wir ein Problem: Unsere neuen Variablen tragen die Namen der Tage (Variable "Days"), also "1" und "9". Variablennamen die nur aus Zahlen bestehen gefallen R gar nicht. Also benennen wir sie mithilfe der colnames()-Funktion um.    
+4. Erstellen einer Contingency-Tabelle.   
+5. Ausgeben der Tabelle inklusive Summen.   
+6. Rechnen des McNemar-Tests    
 ```{r mcnemar, echo=T}
 # Schritt 1
 day1_9_mc <- day1_9[, c("Subject", "Days", "RT_Verteilung")]
@@ -1091,9 +1110,9 @@ addmargins(day1_9_mcntest)
 # Schritt 6
 mcnemar.test(day1_9_mcntest)
 ```
+  
 Wie wir der Tabelle entnehmen können, war die Reaktionszeit von 13 der 18 VPs an Tag 1 unter dem Mittelwert und an Tag 9 darüber, bei vier VPs blieb sie darunter und bei einer VP blieb sie darüber. Der Unterschied zwischen den beiden Tagen ist mit p < 0.001 signifkant.
-
-
+  
 ## Korrelationen    
 Für die grafische Untersuchung von Korrelationen empfiehlt sich ein einfacher Scatterplot mit Regressionsgerade, wie in Kapitel [Regressionsgeraden] beschrieben:
 ```{r correlation plot, echo=T}
@@ -1102,29 +1121,29 @@ gg_sleep +
   stat_smooth(aes(x = VerbalFluency, y = Reaction),   # Regressionsgerade
               method = lm)
 ```
-
+  
 Korrelationen können mit der Funktion ```cor.test()``` nach dem folgenden Muster berechnet werden:   
 ```cor.test(data$x, data$y, method = "pearson")```   
   
 Das Argument ```method =``` gibt an, welcher Korelationskoeffizient berechnet werden soll ("pearson", "kendall", oder "spearman").
-
+  
 **Ein Beispiel:**
 ```{r cor test, echo=T}
 cor.test(sleepstudy$VerbalFluency, sleepstudy$Reaction, method = "pearson")
 ```
-
+  
 **TIPP:** Das Paket [ggpubr](http://www.sthda.com/english/articles/24-ggpubr-publication-ready-plots/76-add-p-values-and-significance-levels-to-ggplots/#compare-more-than-two-groups) beinhaltet weitere nützliche Funktionen zur grafischen Darstellung von Korrelationen. 
-
-## General Mixed Models     
+  
+## General Mixed Models         
 Für eine Einleitung in das Thema empfehlen sich zwei kurze Tutorials zu *Linear Models* und *Linear Mixed Effect Models* von Bodo Winter:   
 Tutorial 1 (Linear Models):   
 http://www.bodowinter.com/uploads/1/2/9/3/129362560/bw_lme_tutorial1.pdf    
 Tutorial 2 (Linear Mixed Effects Models):   
 http://www.bodowinter.com/uploads/1/2/9/3/129362560/bw_lme_tutorial2.pdf    
-
+  
 ### Linear Model    
 Dieses einfache lineare Modell modelliert den Einfluss von Geschlecht auf Reaktionszeit an Tag 1.
-Die Syntax in R lässt sich wie folgt verallgemeinern:
+Die Syntax in R lässt sich wie folgt verallgemeinern:   
 **lm(dependent variable ~ independent variable, data)**
 
 ```{r linear model, echo=T}
@@ -1133,33 +1152,37 @@ sleep_lm <- lm(Reaction ~ Sex, day1)
 # Ausgabe mit der Funktion summary() 
 summary(sleep_lm)
 ```
-
-
+  
 ### Linear Mixed Effects Model    
-Modelliert den Einfluss unserer unabhängigen Variablen auf unsere abhängige Variable unter Berücksichtigung anderer Faktoren, wie z.B. der Zwischensubjektvariabilität.
+Modelliert den Einfluss unserer unabhängigen Variablen auf unsere abhängige Variable unter Berücksichtigung anderer Faktoren, wie z.B. der Zwischensubjektvariabilität.    
+  
+Grober Aufbau:    
+**dependent vairable ~ independent variable + error**   
+  
+Die Syntax für die Funktion lmer() in R lässt sich wie folgt verallgemeinern:   
+**lmer(dependent variable ~ fixed effect1 + fixed effect2 + ... + (random effects), data)**   
+  
+Wie unterscheiden sich *fixed effect* und *random effect*?    
+**Fixed effect:**   
 
-Grober Aufbau:
-**dependent vairable ~ independent variable + error**
+- systematischer und vorhersagbarer Effekt auf die Daten (z.B. der Effekt von Schlafentzug in Tagen auf Reaktionszeit)    
+- allen für ein Experiment definierten Ausprägungen sind vorhanden (z.B. der Einfluss einer Variable "Höflichkeit" mit den Ausprägungen "unhöflich" & "höflich" auf unsere abhängige Variable)   
+  
+  
+**Random effect:**    
 
-Die Syntax für die Funktion lmer() in R lässt sich wie folgt verallgemeinern:
-**lmer(dependent variable ~ fixed effect1 + fixed effect2 + ... + (random effects), data)**
+- kann einen Einfluss auf die Daten haben, der nicht systematisch und vorhersagbar ist (z.B. Zwischensubjektvariabilität)    
+- stell ein zufälliges Sample der Gesamtpopulation dar (z.B. unsere gewählten VPs, Items einer Condition etc.)   
+  
+Aufbau des *random effects*:    
 
-Wie unterscheiden sich *fixed effect* und *random effect*?
-**Fixed effect:**
-- systematischer und vorhersagbarer Effekt auf die Daten (z.B. der Effekt von Schlafentzug in Tagen auf Reaktionszeit)
-- allen für ein Experiment definierten Ausprägungen sind vorhanden (z.B. der Einfluss einer Variable "Höflichkeit" mit den Ausprägungen "unhöflich" & "höflich" auf unsere abhängige Variable)
-**Random effect:**
-- kann einen Einfluss auf die Daten haben, der nicht systematisch und vorhersagbar ist (z.B. Zwischensubjektvariabilität)
-- stell ein zufälliges Sample der Gesamtpopulation dar (z.B. unsere gewählten VPs, Items einer Condition etc.)
-
-Aufbau des *random effects*:
-- ```(random slope | random intercept)```
-- Nur variierender Intercept (also Variation innerhalb eines random effects): ```(1|random effect)```
-- Nur variierende Slope: ```(0+fixed effect|random effect)```
-- Variierender Intercept & variierende Slope: ```(1+fixed effect|random effect)```
-
-Random slope & intercept grafisch dargestellt:
-http://mfviz.com/hierarchical-models/
+- ```(random slope | random intercept)```   
+- Nur variierender Intercept (also Variation innerhalb eines random effects): ```(1|random effect)```    
+- Nur variierende Slope: ```(0+fixed effect|random effect)```   
+- Variierender Intercept & variierende Slope: ```(1+fixed effect|random effect)```    
+  
+Random slope & intercept grafisch dargestellt:    
+http://mfviz.com/hierarchical-models/   
 
 Wollen wir berücksichtigen, dass sich die Subjects in ihrer Fähigkeit zu reagieren unterscheiden, sagen wir dem Modell, dass es **für jedes Subject einen anderen Intercept** annehmen soll:
 ```{r linear mixed1, echo=T}
@@ -1168,8 +1191,9 @@ lmm1 <- lmer(Reaction ~ Days + (1|Subject), sleepstudy)
 # Ausgabe mit der Funktion summary() 
 summary(lmm1)
 ```
-So können wir beispielsweise berücksichtigen, dass manche Subjects generell schneller reagieren können als Andere.
-
+  
+So können wir beispielsweise berücksichtigen, dass manche Subjects generell schneller reagieren können als Andere.    
+  
 Wollen wir berücksichtigen, dass sich die Subjects in ihrer Fähigkeit zu reagieren **nicht** unterscheiden, sie jedoch Unterschiede aufgrund des *fixed effect* (hier: Days) aufweisen, sagen wir dem Modell, dass es **für jedes Subjekt den gleichen Intercept, jedoch eine andere Slope** annehmen soll. Wir berücksichtigen also, dass manche Subjects mehr unter dem Schlafentzug leiden als andere:
 ```{r linear mixed2, echo=T}
 # Modell definieren
@@ -1177,7 +1201,7 @@ lmm2 <- lmer(Reaction ~ Days + (0+Days|Subject), sleepstudy)
 # Ausgabe mit der Funktion summary() 
 summary(lmm2)
 ```
-
+  
 Wollen wir berücksichtigen, dass sich die Subjects in ihrer Fähigkeit zu reagieren unterscheiden **und** sie  Unterschiede aufgrund des *fixed effect* (hier: Days) aufweisen, sagen wir dem Modell, dass es **für jedes Subject einen anderen Intercept und eine andere Slope** annehmen soll:
 ```{r linear mixed3, echo=T}
 # Modell definieren
@@ -1185,28 +1209,28 @@ lmm3 <- lmer(Reaction ~ Days + (1+Days|Subject), sleepstudy)
 # Ausgabe mit der Funktion summary() 
 summary(lmm3)
 ```
+  
+Typisch wäre hier z.B. auch eine Berücksichtigung der Unterschiedlichen Items nach kritischer unabhängiger Variable (hier "Condition"): ```RT ~ Condition + (1+Condition|Item)```.    
+  
+Interagierende *fixed effects* werden mit einem * verbunden:    
+```fixed effect1*fixed effect2```   
+Dies fasst die folgenden Notation zusammen:     
+```fixed effect1 + fixed effext2 + fixedeffect1:fixedeffect2```   
+Wobei ```fixedeffect1:fixedeffect2``` für die Interaktion zwischen den Effekten steht.    
 
-Typisch wäre hier z.B. auch eine Berücksichtigung der Unterschiedlichen Items nach kritischer unabhängiger Variable (hier "Condition"): ```RT ~ Condition + (1+Condition|Item)```.
-
-Interagierende *fixed effects* werden mit einem * verbunden: 
-```fixed effect1*fixed effect2```
-Dies fasst die folgenden Notation zusammen: 
-```fixed effect1 + fixed effext2 + fixedeffect1:fixedeffect2```
-Wobei ```fixedeffect1:fixedeffect2``` für die Interaktion zwischen den Effekten steht.
-
-
-#### R-Squared
+  
+#### R-Squared    
 Anders als bei einem [Linear Model] gibt die Funktion ```summary()``` bei [Linear Mixed Effect Models] keine *R-Squared*-Werte (R2) aus. Um den *conditional R2* und *marginal R2* eines Modells zu erhalten, kann die Funktion ```r.squaredGLMM()``` aus dem "MuMIn"-Paket verwendet werden:
 
 ```{r r squared, echo=T}
 r.squaredGLMM(lmm3)
 ```
-
+  
 Alternativ eignet sich auch die Funktion ```r2()``` aus dem "sjstats"-Paket. 
 
-
-#### Likelihood Ratio Test    
-Verschiedene Modelle lassen sich mit der Funktion `anova()` vergleichen, um herauszufinden, welches Modell unsere Daten besser beschreibt. Wir vergleichen hier die Modelle *lmm1* und *lmm3* aus dem Kapitel [Linear Mixed Effects Model].
+  
+#### Likelihood Ratio Test        
+Verschiedene Modelle lassen sich mit der Funktion `anova()` vergleichen, um herauszufinden, welches Modell unsere Daten besser beschreibt. Wir vergleichen hier die Modelle *lmm1* und *lmm3* aus dem Kapitel [Linear Mixed Effects Model].   
 
 Zunächst müssen wir unsere Modelle noch um das Argument `REML = FALSE` ergänzen. Wir übernehmen die Kommandos der Modelle lmm1 und lmm3 und speichern sie mit der Ergänzung unter den Namen *lmm4* und *lmm5* ab:
 ```{r compare models, echo=T}
@@ -1216,18 +1240,19 @@ lmm5 <- lmer(Reaction ~ Days + (1+Days|Subject), sleepstudy, REML = FALSE)
 # Likelihood ratio test
 anova(lmm4, lmm5)
 ```
+  
+Wir sehen, dass unser Modell **lmm5** (bzw. lmm3) den niedrigeren Akaike-Informationskriterium (AIC)-Wert hat und sich signifikant vom Modell lmm1 unterscheidet. Somit hat das Modell lmm3 den besseren Fit.   
 
-Wir sehen, dass unser Modell **lmm5** (bzw. lmm3) den niedrigeren Akaike-Informationskriterium (AIC)-Wert hat und sich signifikant vom Modell lmm1 unterscheidet. Somit hat das Modell lmm3 den besseren Fit.
-
-Mit dieser Methode lassen sich auch Modelle vergleichen, die sich z.B. bezüglich eines weiteren *fixed effects* unterscheiden. 
-Der *Likelihood ratio test* wird auf den Seiten 11-14 von Bodo Winters Tutorial 2 genauer erklärt (siehe Abschnitt [General Mixed Models])
-
-#### Stepwise Regression    
+Mit dieser Methode lassen sich auch Modelle vergleichen, die sich z.B. bezüglich eines weiteren *fixed effects* unterscheiden.    
+Der *Likelihood ratio test* wird auf den Seiten 11-14 von Bodo Winters Tutorial 2 genauer erklärt (siehe Abschnitt [General Mixed Models]).   
+  
+#### Stepwise Regression       
 Bei einer *Stepwise Regression* wird ausgehend von einem möglichst maximalen Modell berechnet, welche *fixed* und *random effects* die Daten am besten beschreiben.   
-In R wird die Funktion ```step()``` aus dem Paket "lmerTest" wie folgt verwendet:   
+In R wird die Funktion ```step()``` aus dem Paket "lmerTest" wie folgt verwendet:  
+
 1. Maximales Modell erstellen   
 2. Funktion ```step()``` auf Modell anwenden und in neuer Variable speichern    
-3. Ergebnisse der *Stepwise Regression* ausgeben
+3. Ergebnisse der *Stepwise Regression* ausgeben    
 4. Neues Modell mit der Funktion ```get_model()``` in neuer Variable speichern    
 
 Ein Beispiel für eine *Stepwise Regression* anhand der "ham"-Daten aus dem "lmerTest"-Paket:   
@@ -1244,20 +1269,21 @@ step_lmm6      # Display elimination results
 # Schritt 4
 final_lmm6 <- get_model(step_lmm6)
 ```
-
-Kritik an Stepwise Regression (Smith 2018):
+  
+Kritik an Stepwise Regression (Smith 2018):   
 
 > Stepwise regression selects explanatory variables for multiple regression models based on their statistical significance. Although it has often been criticized for the misapplication of single-step statistical tests to a multi-step procedure, stepwise regression has become popular with Big Data because it is a very efficient way of choosing a relatively small number of explanatory variables from a vast array of possibilities. The assumption is that the larger the number of possible predictors, the more useful is stepwise regression.
 This paper uses Monte Carlo simulations to demonstrate that a stepwise procedure may choose nuisance variables rather than true variables and that the out-of-sample accuracy of the model may be far worse than the in-sample fit. These problems are more likely to be serious when there are a large number of potential predictors. Stepwise regression does not solve the problem of Big Data. Big Data exacerbates the problems of stepwise regression.
 
 #### Pairwise Comparison bei Linear Mixed Effect Models   
 Das Paket "emmeans" ermöglicht eine *Pairwise Comparison* von linearen gemischten Modellen. Dies ist wie folgt durchzuführen:   
+
 1. Modell definieren    
 2. Summary des Modells ausgeben (**optional**, aber informativ)   
 3. Mittels der Funktion ```anova()``` eine allgemeinere Darstellung der Effekte ausgeben (auch **optional**)   
 4. Interaktionsplot mit der Funktion ```emmip()``` anzeigen lassen (**optional**, bei mehreren *fixed effects* hilfreich)    
 5. *Estimated marginal means* der für die *Pairwise Comparison* gewünschten Faktoren mit der Funktion ```emmeans()``` berechnen und in neuer Variable speichern   
-6. *Pairwise Comparison* mit der Funktion ```pairs()``` ausgeben lassen (das Argument ```simple = ``` kann verwendet werden, um die Ausgabe nach einer Variable aufzuteilen)
+6. *Pairwise Comparison* mit der Funktion ```pairs()``` ausgeben lassen (das Argument ```simple = ``` kann verwendet werden, um die Ausgabe nach einer Variable aufzuteilen)    
 
 Ein Beispiel für eine *Pairwise Comparison bei Linear Mixed Effect Models* anhand der "ham"-Daten aus dem "lmerTest"-Paket, mit zwei *fixed factors*:
 ```{r pw comp lme, echo=T}
@@ -1274,42 +1300,47 @@ lmm7_pw <- emmeans(lmm7, ~ Product * Information)
 # Schritt 6
 pairs(lmm7_pw, simple = "Product")
 ```
-
+  
 **Hinweis:** Dies funktioniert nicht, wenn der *fixed effect* (wie "Days" aus den "sleepstudy"-Daten) numerisch ist. 
- 
+  
 ### Voraussetzungen für General Mixed Models    
-Die Voraussetzungen für *Linear Models* und *Linear Mixed Effect Models* werden auf den Seiten 12-21 von Bodo Winters Tutorial 1 genauer erklärt (siehe Abschnitt [General Mixed Models]). Im Folgenden werden grob die Funktionen in R dargestellt:
-
+Die Voraussetzungen für *Linear Models* und *Linear Mixed Effect Models* werden auf den Seiten 12-21 von Bodo Winters Tutorial 1 genauer erklärt (siehe Abschnitt [General Mixed Models]). Im Folgenden werden grob die Funktionen in R dargestellt:    
+  
 #### Linearität   
-```{r glm linearity, echo=T}
+
+Um ein Modell auf Linearität zu überprüfen, werden die *residuals* wie folgt geplottet:
+```{r glm linearity, echo=T, fig.align = "left"}
 plot(fitted(lmm3), residuals(lmm3))
 abline(h = 0) # horizontale Linie bei y = 0
 ```
-
+  
 Hier sehen wir lineare Daten. Nonlinear wären diese, wenn ein Kurvenmuster zu erkennen wäre.
-
+  
 #### Kollinearität    
-Kollinearität (also Korrelation zwischen *fixed effects*) lassen sich auf verschiedene Arten und Weisen überprüfen, z.B. können die Variablen wie in Kapitel [Korrelationen] untersucht werden.
 
+Kollinearität (also Korrelation zwischen *fixed effects*) lassen sich auf verschiedene Arten und Weisen überprüfen, z.B. können die Variablen wie in Kapitel [Korrelationen] untersucht werden.    
+  
 Eine weitere Methode ist das Betrachten der *variance inflation factors* (VIF). Diese Werte sollten unter einem bestimmten Grenzwert liegen. Winter (2019) setzt diesen Wert bspw. bei 10 an. 
-Die Funktion ```vif()``` ist im *car*-Paket enthalten und nimmt das Modell als Argument.
-Zur Demonstration erstellen wir ein Modell (lmm6), welches das Modell lmm3 um den *fixed effect* "VerbalFluency" erweitert:
+Die Funktion ```vif()``` ist im *car*-Paket enthalten und nimmt das Modell als Argument.    
+Zur Demonstration erstellen wir ein Modell (lmm6), welches das Modell lmm3 um den *fixed effect* "VerbalFluency" erweitert:    
 
 ```{r collineartiy, echo=T}
 lmm8 <- lmer(Reaction ~ Days + VerbalFluency + (1+Days|Subject), sleepstudy)
 vif(lmm8)
 ```
+  
 Die beiden *fixed effects* zeigen so gut wie keine Kollinearität. Dies ist nicht verwunderlich, da es sich hier bei "VerbalFluency" um eine frei erfundene und von uns generierte Variable handelt.
+  
+#### Homoskedastizität        
 
-#### Homoskedastizität    
 Die Homoskedastizität (bzw. Varianzhomogenität) kann mit Hilfe des Levene Tests überprüft werden (siehe [Varianzhomogenität]):
 ```{r levene lm, echo=T}
 leveneTest(Reaction ~ as.factor(Days), data = sleepstudy)
 ```
-
-Alternativ kann ein Residual Plot betrachten werden (siehe [Linearität]).
+  
+Alternativ kann ein Residual Plot betrachten werden (siehe [Linearität]).   
 Beispiele für Residuals Plots mit Homoskedastizität und Heteroskedastizität sind auf den Seiten 17-18 von Bodo Winters Tutorial 1 zu finden (siehe [General Mixed Models]).
-
+  
 #### Normalverteilung der Residuals   
 Ob die Residuals normalverteilt sind lässt sich mit einem Histogram oder einem Q-Q Plot überprüfen:
 ```{r normality residuals, echo=T}
@@ -1320,31 +1351,31 @@ hist(residuals(lmm3))
 qqnorm(residuals(lmm3))
 qqline(residuals(lmm3))
 ```
-
+  
 Zudem kann der Shapiro-Wilk Test (siehe [Normalverteilung]) auf die Residuals angewendet werden:
 ```{r shapiro residuals, echo=T}
 shapiro.test(residuals(lmm3))
 ```
-
+  
 #### Influential Data   
 Genauere Informationen zu *influential data* siehe Nieuwenhuis et al. (2012) und Winter (2013-1).
-
+  
 ##### bei Linear Models   
 Entsprechend Winter (2013-1) wird die Funktion ```dfbeta()``` verwendet, welche das Lineare Modell als Argument nimmt:
 ```{r lm influence, echo=T}
 dfbeta(sleep_lm)
 ```
-
+  
 Als Grenzwert legen wir die absolute Hälfte des Slopes fest (s. [Linear Model]):
-12.05 / 2 = *6.025*.
+12.05 / 2 = *6.025*.    
+  
+Wie der Tabelle zu entnehmen ist, sind die Datenpunkte aus Reihe 2 und 3 als *influential data* zu betrachten, da ihr absoluter Wert größer als 6.025 ist.   
 
-Wie der Tabelle zu entnehmen ist, sind die Datenpunkte aus Reihe 2 und 3 als *influential data* zu betrachten, da ihr absoluter Wert größer als 6.025 ist.
-
-Winter (2013-1) über den Umgang mit *influential data*:
+Winter (2013-1) über den Umgang mit *influential data*:   
 *"How to proceed if you have influential data points? Well, it’s definitely not legit to simply exclude those points and report only the results on the reduced data set. A better approach would be to run the analysis with the influential points and then again without the influential points ... then you can report both analyses and state whether the interpretation of the results does or doesn’t change. The only case when it is o.k. to exclude influential points is when there’s an obvious error with them, so for example, a value that doesn’t make sense (e.g., negative age, negative height) or a value that obviously is the result due to a technical error in the data acquisition stage (e.g., voice pitch values of 0). Influence diagnostics allow you to spot those points so you can then go back to the original data and see what went wrong."*
-
+  
 ##### bei Linear Mixed Effect Models    
-Um die *influential data* bei *Linear Mixed Effect Models* zu betrachten, kann das Paket "influence.ME" von Nieuwenhuis et al. (2012) verwendet werden.
+Um die *influential data* bei *Linear Mixed Effect Models* zu betrachten, kann das Paket "influence.ME" von Nieuwenhuis et al. (2012) verwendet werden.    
 Wir untersuchen hier, ob eine VP unsere Ergebnisse potentiell verfälscht:
 ```{r lmem influence, echo=T}
 # Influence Funktion
@@ -1359,13 +1390,13 @@ plot(sleep.inf,
      ylab = "Subject",
      cutoff = 2/sqrt(nlevels(sleepstudy$Subject))) # nach Nieuwenhuis et al. (2012)
 ```
-
+  
 Anders als Winter (2013-1) wählen Nieuwenhuis et al. (2012) den Grenzwert für die DFBeta-Werte bei 2 geteilt durch die Wurzel von n, wobei n = die Anzahl der Ausprägungen des Gruppenfaktors.
-In unserem Fall: 2 geteilt durch die Wurzel von 18; 
-bzw. in R: ```2/sqrt(nlevels(sleepstudy$Subject))``
+In unserem Fall: 2 geteilt durch die Wurzel von 18;     
+bzw. in R: ```2/sqrt(nlevels(sleepstudy$Subject))``   
 **= 0.4714045**
-
-Wie der Tabelle und dem Plot zu entnehmen sind, liegt VP 335 über diesem Wert.
+  
+Wie der Tabelle und dem Plot zu entnehmen sind, liegt VP 335 über diesem Wert.    
 
 Mit der Funktion ```exclude.influence()``` kann die VP 335 aus dem Modell entfernt werden:
 ```{r excl infl, echo=T}
@@ -1374,17 +1405,20 @@ lmm3.excl <- exclude.influence(lmm3, "Subject", "335")
 # Summary des neuen Modells
 summary(lmm3.excl)
 ```
-
+  
 Nieuwenhuis et al. (2012) über den Umgang mit *influential data*:
 *"Generally, there are several strategies, including getting more data, checking data consis- tency, adapting model specification, deleting the in- fluential cases from the model, and obtaining addi- tional measurements on existing cases to account for the overly influential cases."*
-
+  
 ## Generalized Linear Models    
-... folgen. 
-Für eine erste Übersicht:
+... folgen.     
+Für eine erste Übersicht:   
 https://www.r-bloggers.com/2018/10/generalized-linear-models-understanding-the-link-function/
-
+  
 # Bayesian Methods    
 ... folgen.
+
+***
+\newpage
 
 # Quellen     
 *Die Quellenangabe für die genutzte R Version wird mit der Funktion ```citation()```abgefragt. Für Pakete wird einfach der Name des Pakets in der Klammer in Anführungszeichen ergänzt.*   
