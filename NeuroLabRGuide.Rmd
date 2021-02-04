@@ -3,13 +3,13 @@ title: "R Guide"
 subtitle: für das Neurolinguistics Lab Mainz
 date: 'Stand: 04.02.2021'
 output:
-  html_document:
-    toc: yes
-    toc_depth: 5
-    number_sections: yes
   pdf_document:
     includes: 
           in_header: parahdr.tex
+    toc: yes
+    toc_depth: 5
+    number_sections: yes
+  html_document:
     toc: yes
     toc_depth: 5
     number_sections: yes
@@ -822,7 +822,8 @@ day1_9 <-
 # Normalverteilung
 shapiro.test(day1_9$Reaction)
 # Varianzhomogenität
-# für die Funktion leveneTest() darf die unabhänigige Variable nicht numerisch sein, daher verwenden wir as.factor()
+# für die Funktion leveneTest() darf die unabhänigige Variable nicht numerisch sein, 
+# daher verwenden wir as.factor()
 leveneTest(Reaction ~ as.factor(Days), data = day1_9)
 # t-test für unabhängige Stichproben
 t.test(Reaction ~ Days, data = day1_9, paired = T)
@@ -991,7 +992,7 @@ sleepstudy2 %>%
   
 ##### mit *baseR*   
 Um eine *two-way repeated measures ANOVA* in *baseR* durchzuführen, gehen wir nach folgendem Schema vor:   
-```aov(dependent variable ~ independent variable1 * independent variable2 + Error(ID/within-subject-conditions), data = data)```    
+```aov(dependent variable ~ independent variable1 * independent variable2 +``` ```Error(ID/within-subject-conditions), data = data)```    
 Das bedeutet:     
 
 - unsere *independent variables* werden durch einen Asterisk getrennt   
