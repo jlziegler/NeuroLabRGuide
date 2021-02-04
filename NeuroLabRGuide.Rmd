@@ -3,11 +3,11 @@ title: "R Guide"
 subtitle: für das Neurolinguistics Lab Mainz
 date: 'Stand: 31.01.2021'
 output:
-  pdf_document:
-    toc: yes
   html_document:
     toc: yes
     number_sections: yes
+  pdf_document:
+    toc: yes
 ---
 
 To-do: 
@@ -1116,11 +1116,11 @@ cor.test(sleepstudy$VerbalFluency, sleepstudy$Reaction, method = "pearson")
 **TIPP:** Das Paket [ggpubr](http://www.sthda.com/english/articles/24-ggpubr-publication-ready-plots/76-add-p-values-and-significance-levels-to-ggplots/#compare-more-than-two-groups) beinhaltet weitere nützliche Funktionen zur grafischen Darstellung von Korrelationen. 
 
 ## General Mixed Models     
-Für eine Einleitung in das Thema empfehlen sich zwei kurze Tutorials zu *Linear Models* und *Linear Mixed Effect Models* von Bodo Winter:
-Tutorial 1 (Linear Models):
-http://www.bodowinter.com/uploads/1/2/9/3/129362560/bw_lme_tutorial1.pdf
-Tutorial 2 (Linear Mixed Effects Models):
-http://www.bodowinter.com/uploads/1/2/9/3/129362560/bw_lme_tutorial2.pdf
+Für eine Einleitung in das Thema empfehlen sich zwei kurze Tutorials zu *Linear Models* und *Linear Mixed Effect Models* von Bodo Winter:   
+Tutorial 1 (Linear Models):   
+http://www.bodowinter.com/uploads/1/2/9/3/129362560/bw_lme_tutorial1.pdf    
+Tutorial 2 (Linear Mixed Effects Models):   
+http://www.bodowinter.com/uploads/1/2/9/3/129362560/bw_lme_tutorial2.pdf    
 
 ### Linear Model    
 Dieses einfache lineare Modell modelliert den Einfluss von Geschlecht auf Reaktionszeit an Tag 1.
