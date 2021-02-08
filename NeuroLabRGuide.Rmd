@@ -3,13 +3,13 @@ title: "R Guide"
 subtitle: für das Neurolinguistics Lab Mainz
 date: 'Stand: 04.02.2021'
 output:
-  pdf_document:
-    includes: 
-          in_header: parahdr.tex
+  html_document:
     toc: yes
     toc_depth: 5
     number_sections: yes
-  html_document:
+  pdf_document:
+    includes: 
+          in_header: parahdr.tex
     toc: yes
     toc_depth: 5
     number_sections: yes
